@@ -19,9 +19,9 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "converter");
 	ros::NodeHandle nh;
 
-	ConvertGoatPose 	convert_goat_pose_0; 
-	ConvertJointState 	convert_goat_jointState_0; 
-	ConvertParameters 	convert_goat_parameters_0;
+	ConvertGoatPose convert_goat_pose_0(nh, true); 
+	ConvertJointState convert_goat_jointState_0(nh); 
+	ConvertParameters convert_goat_parameters_0(nh);
 	ClockTime my_clock_time_0(&convert_goat_pose_0, &convert_goat_jointState_0, &convert_goat_parameters_0); 
 
 	 
