@@ -65,6 +65,7 @@ void ConvertGoatPose::convertGoatPoseCb(const std_msgs::Float32MultiArray::Const
 
 		goatpose_.header.seq 		= timeStamp_incoming_msg_.seq; 
 		// reading from array (extracted from .csv file):
+		// ---> timeStamp_incoming_msg_.seq goes to 0 when chaning jumping mode.
 		goatpose_.header.stamp.sec 	= (*clock_fields_)[timeStamp_incoming_msg_.seq][1];
 		goatpose_.header.stamp.nsec	= (*clock_fields_)[timeStamp_incoming_msg_.seq][2];
 
@@ -231,6 +232,7 @@ void ConvertJointState::convertJointStateCb(const sensor_msgs::JointState::Const
 	// Changing to SI-units if not already
 	goatjointstate_.effort 		= msg->effort; 					  // [N/m]
 	goatjointstate_.velocity 	= msg->velocity; 				  // [rad/s]
+
 	goatjointstate_.position[1] = msg->position[1] * RAD_PER_DEG; // [rad]
 	goatjointstate_.position[2] = msg->position[2] * RAD_PER_DEG; // [rad]
 	goatjointstate_.position[3] = msg->position[3] * RAD_PER_DEG; // [rad]
@@ -266,13 +268,14 @@ ConvertParameters::~ConvertParameters(void)
 void ConvertParameters::convertParametersCb(const std_msgs::Float32MultiArray::ConstPtr& msg)
 {
 	/*
-
+	// Timestamp!!!
 	// State1: 0 = unknown, 1 = sit-stand, 2 = jumping 
 	(jointState sequence number indicates that (restarts at 0), it was also manually copied in the simTime .csv files)
 	// State2: 0 = unknown, 1 = in the air, 2 = on ground
 	(already there)
 	// l_landing, l_compressed, l_thrust
-	// k_landing, k_thrust (can thrust be transformed in k_trust? if not what is behavior?)
+	// k_landing
+	// Thrust 
 
 	*/
 }
