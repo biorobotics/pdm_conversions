@@ -5,35 +5,60 @@
 
 #include <pdm_conversions/convert_classes.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 using namespace std;
+
+ 
 
 
 int main(int argc, char **argv)
 {
 
-	
-
 	ros::init(argc, argv, "converter");
 	ros::NodeHandle nh;
 
-	ConvertGoatPose convert_goat_pose_0(nh, true); 
-	ConvertJointState convert_goat_jointState_0(nh); 
-	ConvertParameters convert_goat_parameters_0(nh);
-	ClockTime my_clock_time_0(&convert_goat_pose_0, &convert_goat_jointState_0, &convert_goat_parameters_0); 
+	// Would be good if we could specify path via command line --> that way it's easier in bash script.
+	ifstream in("/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); 
 
-	 
-	ros::Subscriber sub_pose = nh.subscribe("/pose", 1000, &ConvertGoatPose::convertGoatPoseCb, &convert_goat_pose_0);
-	ros::Subscriber sub_jointState = nh.subscribe("/jointState", 1000, &ConvertJointState::convertJointStateCb, &convert_goat_jointState_0);
-	ros::Subscriber sub_params = nh.subscribe("/params", 1000, &ConvertParameters::convertParametersCb, &convert_goat_parameters_0);
-	ros::Subscriber sub_clockTime = nh.subscribe("/time", 1000, &ClockTime::clockTimeCb, &my_clock_time_0);
-	
-	while(ros::ok())
+
+	vector<vector<double>> clock_fields;
+
+	if(in)
 	{
-		ros::spinOnce();
-	}
+		// Saving .csv clock data to an array
+		string line; 
+		while(getline(in, line))
+		{
+			stringstream sep(line); 
+			string field; 
 
+			clock_fields.push_back(vector<double>());
+
+			while (getline(sep, field, ','))
+			{
+				clock_fields.back().push_back(stod(field));
+			}
+		}
+
+		// Creating the objects containing the callback function and the whole structure		
+		ConvertGoatPose convert_goat_pose_0(nh, &clock_fields, true, 0); 
+		ConvertJointState convert_goat_jointState_0(nh, &clock_fields); 
+		//ConvertParameters convert_goat_parameters_0(nh, &clock_fields, clock_fields.size());
+		
+	 	// Subscribe to the different topics that need their timestamp, metric units and proper ros type:
+		ros::Subscriber sub_pose = nh.subscribe("/pose", 1000, &ConvertGoatPose::convertGoatPoseCb, &convert_goat_pose_0);
+		ros::Subscriber sub_jointState = nh.subscribe("/jointState", 1000, &ConvertJointState::convertJointStateCb, &convert_goat_jointState_0);
+		//ros::Subscriber sub_params = nh.subscribe("/params", 1000, &ConvertParameters::convertParametersCb, &convert_goat_parameters_0);
+		
+		while(ros::ok())
+		{
+			ros::spinOnce();
+		}
+	}
 	return 0; 
 }
