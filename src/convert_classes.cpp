@@ -267,8 +267,10 @@ void ConvertParameters::convertParametersCb(const std_msgs::Float32MultiArray::C
 {
 	/*
 
-	// State1: 0 = unknown, 1 = sit-stand, 2 = jumping
+	// State1: 0 = unknown, 1 = sit-stand, 2 = jumping 
+	(jointState sequence number indicates that (restarts at 0), it was also manually copied in the simTime .csv files)
 	// State2: 0 = unknown, 1 = in the air, 2 = on ground
+	(already there)
 	// l_landing, l_compressed, l_thrust
 	// k_landing, k_thrust (can thrust be transformed in k_trust? if not what is behavior?)
 
