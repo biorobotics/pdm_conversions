@@ -65,6 +65,10 @@ public:
 	int nb_clock_fields_; 
 	bool first_msg_; 
 
+	//----  Specific to custom pose message from goat ----
+	bool reverse_order_; 
+	// some messages got saved in reversed order in the array (custom messages) 
+	
 	void convertJointStateCb(const sensor_msgs::JointState::ConstPtr& msg);
 
 	ConvertJointState(ros::NodeHandle n, vector<vector<double>> *clock_fields); 

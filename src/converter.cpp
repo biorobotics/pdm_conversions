@@ -13,18 +13,16 @@
 
 using namespace std;
 
- 
-
-
 int main(int argc, char **argv)
 {
-
 	ros::init(argc, argv, "converter");
 	ros::NodeHandle nh;
-
+	int a;
+	ros::param::param("converter/file_identity", a, 0);
 	// Would be good if we could specify path via command line --> that way it's easier in bash script.
-	ifstream in("/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); 
-
+	// ifstream in("/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); 
+	cout<<"check the argument parsing:  "<<a<<endl;
+	ifstream in("/home/puneet/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); 
 
 	vector<vector<double>> clock_fields;
 
@@ -46,9 +44,9 @@ int main(int argc, char **argv)
 		}
 
 		// Creating the objects containing the callback function and the whole structure		
-		ConvertGoatPose convert_goat_pose_0(nh, &clock_fields, true, 0); 
+		ConvertGoatPose convert_goat_pose_0(nh, &clock_fields, false, 0); 
 		ConvertJointState convert_goat_jointState_0(nh, &clock_fields); 
-		//ConvertParameters convert_goat_parameters_0(nh, &clock_fields, clock_fields.size());
+		// ConvertParameters convert_goat_parameters_0(nh, &clock_fields, clock_fields.size());
 		
 	 	// Subscribe to the different topics that need their timestamp, metric units and proper ros type:
 		ros::Subscriber sub_pose = nh.subscribe("/pose", 1000, &ConvertGoatPose::convertGoatPoseCb, &convert_goat_pose_0);
