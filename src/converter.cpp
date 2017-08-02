@@ -17,15 +17,17 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "converter");
 	ros::NodeHandle nh;
+	
 	int a;
-	ros::param::param("converter/file_identity", a, 0);
-	// Would be good if we could specify path via command line --> that way it's easier in bash script.
-	// ifstream in("/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); 
-	cout<<"check the argument parsing:  "<<a<<endl;
-	ifstream in("/home/puneet/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); 
+	ros::param::param("converter/file_identity", a, 0); 
+	cout<<"check the argument parsing:  "<< a <<endl;
+
+
+	// ifstream in("/home/puneet/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); // Puneet
+	ifstream in("/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); // Astrid
+
 
 	vector<vector<double>> clock_fields;
-
 	if(in)
 	{
 		// Saving .csv clock data to an array

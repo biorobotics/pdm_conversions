@@ -8,6 +8,7 @@ const double METER_PER_INCH = 0.0254;
 const double RAD_PER_DEG = PI/180;   
 
 
+// ******************************************************************************************************************************
 /// Class: ConvertGoatPose
 /// Constructor
 ConvertGoatPose::ConvertGoatPose(ros::NodeHandle n, vector<vector<double>> *clock_fields, bool reverse_order, int mode)
@@ -42,11 +43,8 @@ ConvertGoatPose::~ConvertGoatPose(void)
 /// Callback function
 void ConvertGoatPose::convertGoatPoseCb(const std_msgs::Float32MultiArray::ConstPtr& msg)
 {
-	timeStamp_incoming_msg_.stamp = ros::Time::now();
+	timeStamp_incoming_msg_.stamp = ros::Time::now(); // This is just a precaution, debugging and stats.
 	
-	int nb_elements = 13;
-	geometry_msgs::TransformStamped goatpose_;
-
 	if (first_msg_)
 	{
 		timeStamp_incoming_msg_.seq = 0; 
@@ -54,23 +52,20 @@ void ConvertGoatPose::convertGoatPoseCb(const std_msgs::Float32MultiArray::Const
 	}
 	else
 		timeStamp_incoming_msg_.seq = timeStamp_incoming_msg_.seq + 1; 
-	
+
+	// Correcting the push_back / push_front from the different modes 
+	// mode sit-stand 	--> reverse_order_ = false (initialized by user)
+	// mode jumping 	--> reverse_order_ = true (when we read a 0 again in the .csv file stored in the array)	
 	if (~reverse_order_ && (*clock_fields_)[timeStamp_incoming_msg_.seq][0]==0 && timeStamp_incoming_msg_.seq > 0)
 	{
 		reverse_order_ = true;
 	}
+
 	if (timeStamp_incoming_msg_.seq < nb_clock_fields_ )
 	{	 
-		// Header: goatpose_ header same as initial clock header, BUT the seq !
-		// Attention. goatpose_.header.seq increments and is NOT the same as in clock header (where it is restarted 
-		// when changing from sit-stand mode to jumping mode).
-		// ALWAYS start playing your bag file before the first clock/pose message's been sent, otherwise you'll get
-		// a shift in the data!!!
+		geometry_msgs::TransformStamped goatpose_;
 
 		goatpose_.header.seq 		= timeStamp_incoming_msg_.seq; 
-
-		// reading from array (extracted from .csv file):
-		// ---> timeStamp_incoming_msg_.seq goes to 0 when changing to jumping mode.
 		goatpose_.header.stamp.sec 	= (*clock_fields_)[timeStamp_incoming_msg_.seq][1];
 		goatpose_.header.stamp.nsec	= (*clock_fields_)[timeStamp_incoming_msg_.seq][2];
 
@@ -86,14 +81,14 @@ void ConvertGoatPose::convertGoatPoseCb(const std_msgs::Float32MultiArray::Const
 		else
 			cout << "{Warning} \tMode selected not kown, could not write goatpose_. Select mode 0,1,2 or 3. Your mode =" << mode_ << "." << endl; 
 		
-		switch (mode_)
+		double norm, qw, qx, qy, qz;
+
+		switch (mode_) // This code has many lines (it could be shorter), but this is also more readable than my origninal code
 		{
-			case 0:
-			{
-				double norm, qw, qx, qy, qz;
+			case 0: // Case 0 = carthesian position and quaternions rotation
 				if(reverse_order_ == true)
 				{
-					goatpose_.transform.translation.x = msg->data[9]   * METER_PER_INCH; //x[m]
+					goatpose_.transform.translation.x = msg->data[9] * METER_PER_INCH; //x[m]
 					goatpose_.transform.translation.y = msg->data[8] * METER_PER_INCH; //y[m]
 					goatpose_.transform.translation.z = msg->data[7] * METER_PER_INCH; //z[m]	
 					qx = msg->data[6]; 
@@ -104,7 +99,7 @@ void ConvertGoatPose::convertGoatPoseCb(const std_msgs::Float32MultiArray::Const
 				}
 				else
 				{
-					goatpose_.transform.translation.x = msg->data[3]   * METER_PER_INCH; //x[m]
+					goatpose_.transform.translation.x = msg->data[3] * METER_PER_INCH; //x[m]
 					goatpose_.transform.translation.y = msg->data[4] * METER_PER_INCH; //y[m]
 					goatpose_.transform.translation.z = msg->data[5] * METER_PER_INCH; //z[m]
 					qx = msg->data[6]; 
@@ -113,6 +108,7 @@ void ConvertGoatPose::convertGoatPoseCb(const std_msgs::Float32MultiArray::Const
 					qw = msg->data[9];
 					norm = sqrt(qx*qx + qy*qy + qz*qz + qw*qw); 		
 				}
+
 				if (norm > EPSILON)
 				{
 					goatpose_.transform.rotation.x = qx/norm; 
@@ -128,101 +124,100 @@ void ConvertGoatPose::convertGoatPoseCb(const std_msgs::Float32MultiArray::Const
 					goatpose_.transform.rotation.z = qz;
 					goatpose_.transform.rotation.w = qw;
 				}
-				break;
-			}
-		}
-	// 	if (mode_ == 0 || mode_ == 2)
-	// 	{
-	// 		// Translation: carthesian
-	// 		int it_start = 3;  
-	// 		if(reverse_order_ == true)
-	// 		{
-	// 			goatpose_.transform.translation.x = msg->data[nb_elements -1 - it_start]   * METER_PER_INCH; //x[m]
-	// 			goatpose_.transform.translation.y = msg->data[nb_elements -1 - it_start+1] * METER_PER_INCH; //y[m]
-	// 			goatpose_.transform.translation.z = msg->data[nb_elements -1 - it_start+2] * METER_PER_INCH; //z[m]					
-	// 		}
-	// 		else
-	// 		{
-	// 			goatpose_.transform.translation.x = msg->data[it_start]   * METER_PER_INCH; //x[m]
-	// 			goatpose_.transform.translation.y = msg->data[it_start+1] * METER_PER_INCH; //y[m]
-	// 			goatpose_.transform.translation.z = msg->data[it_start+2] * METER_PER_INCH; //z[m]		
-	// 		}
-	// 	}
-	// 	else if(mode_ == 1 || mode_ == 3)
-	// 	{
-	// 		// Translation: spherical
-	// 		int it_start = 0; 
-	// 		if(reverse_order_ == true)
-	// 		{
-	// 			goatpose_.transform.translation.x = msg->data[nb_elements -1 - it_start]   * METER_PER_INCH; 	//r[m]
-	// 			goatpose_.transform.translation.y = msg->data[nb_elements -1 - it_start+1]; 					//theta[rad]
-	// 			goatpose_.transform.translation.z = msg->data[nb_elements -1 - it_start+2]; 					//phi [rad]
-	// 		}
-	// 		else
-	// 		{
-	// 			goatpose_.transform.translation.x = msg->data[it_start] * METER_PER_INCH; 	//r[m]
-	// 			goatpose_.transform.translation.y = msg->data[it_start+1]; 					//theta[rad]
-	// 			goatpose_.transform.translation.z = msg->data[it_start+2]; 					//phi [rad]	
-	// 		}
-	// 	}
-	
-	// 	if (mode_ == 0 || mode_ == 1)
-	// 	{
-	// 		// Rotation: unit quaternion
-	// 		int it_start = 6;
-	// 		double norm, qw, qx, qy, qz;
+				break; 
 
-	// 		if(reverse_order_ == true)
-	// 		{
-	// 			qw = msg->data[nb_elements -1 - it_start+3];
-	// 			qx = msg->data[nb_elements -1 - it_start]; 
-	// 			qy = msg->data[nb_elements -1 - it_start+1]; 
-	// 			qz = msg->data[nb_elements -1 - it_start+2];  
-	// 			norm = sqrt(qx*qx + qy*qy + qz*qz + qw*qw); 
-	// 		}
-	// 		else
-	// 		{
-	// 			qw = msg->data[it_start+3];
-	// 			qx = msg->data[it_start]; 
-	// 			qy = msg->data[it_start+1]; 
-	// 			qz = msg->data[it_start+2]; 
-	// 			norm = sqrt(qx*qx + qy*qy + qz*qz + qw*qw); 
-	// 		}
-	
-			
-	// 		if (norm > EPSILON)
-	// 		{
-	// 			goatpose_.transform.rotation.x = qx/norm; 
-	// 			goatpose_.transform.rotation.y = qy/norm; 
-	// 			goatpose_.transform.rotation.z = qz/norm;
-	// 			goatpose_.transform.rotation.w = qw/norm;	
-	// 		}
-	// 		else
-	// 		{
-	// 			cout << "{Warning} \tCould not transform quaternion to unit quaternion. Quaternion not transformed." << endl; 
-	// 			goatpose_.transform.rotation.x = qx; 
-	// 			goatpose_.transform.rotation.y = qy; 
-	// 			goatpose_.transform.rotation.z = qz;
-	// 			goatpose_.transform.rotation.w = qw;
-	// 		}	
-	// 	}
-	// 	else if(mode_ == 2 || mode_ == 3)
-	// 	{
-	// 		int it_start = 10; 
-	// 		if(reverse_order_ == true)
-	// 		{
-	// 			goatpose_.transform.rotation.x = msg->data[nb_elements -1 - it_start] * RAD_PER_DEG; 		// Roll [rad]
-	// 			goatpose_.transform.rotation.y = msg->data[nb_elements -1 - it_start + 1] * RAD_PER_DEG; 	// Pitch [rad]
-	// 			goatpose_.transform.rotation.z = msg->data[nb_elements -1 - it_start + 2] * RAD_PER_DEG; 	// Yaw [rad]
-	// 		}
-	// 		else
-	// 		{
-	// 			goatpose_.transform.rotation.x = msg->data[it_start] * RAD_PER_DEG; 		// Roll [rad]
-	// 			goatpose_.transform.rotation.y = msg->data[it_start + 1] * RAD_PER_DEG; 	// Pitch [rad]
-	// 			goatpose_.transform.rotation.z = msg->data[it_start + 2] * RAD_PER_DEG; 	// Yaw [rad]	
-	// 		}
-	// 	}			
-	
+			case 1: // Case 1 = spherical position and quaternions rotation
+				if(reverse_order_ == true)
+				{
+					goatpose_.transform.translation.x = msg->data[12] * METER_PER_INCH; //r[m]
+					goatpose_.transform.translation.y = msg->data[11];				    //theta[rad]
+					goatpose_.transform.translation.z = msg->data[10]; 				    //phi[rad]	
+					qx = msg->data[6]; 
+					qy = msg->data[5]; 
+					qz = msg->data[4];  
+					qw = msg->data[3];
+					norm = sqrt(qx*qx + qy*qy + qz*qz + qw*qw); 				
+				}
+				else
+				{
+					goatpose_.transform.translation.x = msg->data[0] * METER_PER_INCH; //r[m]
+					goatpose_.transform.translation.y = msg->data[1]; 				   //theta[rad]
+					goatpose_.transform.translation.z = msg->data[2]; 				   //phi[rad]
+					qx = msg->data[6]; 
+					qy = msg->data[7]; 
+					qz = msg->data[8]; 
+					qw = msg->data[9];
+					norm = sqrt(qx*qx + qy*qy + qz*qz + qw*qw); 		
+				}
+
+				if (norm > EPSILON)
+				{
+					goatpose_.transform.rotation.x = qx/norm; 
+					goatpose_.transform.rotation.y = qy/norm; 
+					goatpose_.transform.rotation.z = qz/norm;
+					goatpose_.transform.rotation.w = qw/norm;	
+				}
+				else
+				{
+					cout << "{Warning} \tCould not transform quaternion to unit quaternion. Quaternion not transformed." << endl; 
+					goatpose_.transform.rotation.x = qx; 
+					goatpose_.transform.rotation.y = qy; 
+					goatpose_.transform.rotation.z = qz;
+					goatpose_.transform.rotation.w = qw;
+				}
+				break; 
+
+			case 2: // Case 2 = carthesian position and euler angles rotation
+				if(reverse_order_ == true)
+				{
+					goatpose_.transform.translation.x = msg->data[9] * METER_PER_INCH; //x[m]
+					goatpose_.transform.translation.y = msg->data[8] * METER_PER_INCH; //y[m]
+					goatpose_.transform.translation.z = msg->data[7] * METER_PER_INCH; //z[m]
+					goatpose_.transform.rotation.w = 0; 
+					goatpose_.transform.rotation.x = msg->data[2] * RAD_PER_DEG; 	   // roll [rad] 	
+					goatpose_.transform.rotation.y = msg->data[1] * RAD_PER_DEG; 	   // pitch [rad] 	
+					goatpose_.transform.rotation.z = msg->data[0] * RAD_PER_DEG; 	   // yaw [rad] 		 				
+				}
+				else
+				{
+					goatpose_.transform.translation.x = msg->data[3] * METER_PER_INCH; //x[m]
+					goatpose_.transform.translation.y = msg->data[4] * METER_PER_INCH; //y[m]
+					goatpose_.transform.translation.z = msg->data[5] * METER_PER_INCH; //z[m]
+					goatpose_.transform.rotation.w = 0; 
+					goatpose_.transform.rotation.x = msg->data[10] * RAD_PER_DEG; 	   // roll [rad] 	
+					goatpose_.transform.rotation.y = msg->data[11] * RAD_PER_DEG; 	   // pitch [rad] 	
+					goatpose_.transform.rotation.z = msg->data[12] * RAD_PER_DEG; 	   // yaw [rad]  		
+				}	
+				break;
+
+			case 3: // Case 2 = spherical position and euler angles rotation
+				if(reverse_order_ == true)
+				{
+					goatpose_.transform.translation.x = msg->data[12] * METER_PER_INCH; //r[m]
+					goatpose_.transform.translation.y = msg->data[11];				    //theta[rad]
+					goatpose_.transform.translation.z = msg->data[10]; 				    //phi[rad]	
+					goatpose_.transform.rotation.w = 0; 
+					goatpose_.transform.rotation.x = msg->data[2] * RAD_PER_DEG; 	   // roll [rad] 	
+					goatpose_.transform.rotation.y = msg->data[1] * RAD_PER_DEG; 	   // pitch [rad] 	
+					goatpose_.transform.rotation.z = msg->data[0] * RAD_PER_DEG; 	   // yaw [rad] 		 				
+				}
+				else
+				{
+					goatpose_.transform.translation.x = msg->data[0] * METER_PER_INCH;  //r[m]
+					goatpose_.transform.translation.y = msg->data[1];				    //theta[rad]
+					goatpose_.transform.translation.z = msg->data[2]; 				    //phi[rad]	
+					goatpose_.transform.rotation.w = 0; 
+					goatpose_.transform.rotation.x = msg->data[10] * RAD_PER_DEG; 	   // roll [rad] 	
+					goatpose_.transform.rotation.y = msg->data[11] * RAD_PER_DEG; 	   // pitch [rad] 	
+					goatpose_.transform.rotation.z = msg->data[12] * RAD_PER_DEG; 	   // yaw [rad]  		
+				}	
+				break;
+
+			default: 
+				cout << "Invalid mode: "<< mode_ << endl; 
+				break; 
+		}
+
 		// Publishing message -------------------------------------------------------------
 		pub_GoatPose_.publish(goatpose_); 
 	}
@@ -230,7 +225,7 @@ void ConvertGoatPose::convertGoatPoseCb(const std_msgs::Float32MultiArray::Const
 		cout << "{Warning} \t Cannot publish goatpose as there are no more clock messages." << endl; 
 }
 
-
+// ******************************************************************************************************************************
 /// Class: ConvertJointState 
 /// Constructor
 ConvertJointState::ConvertJointState(ros::NodeHandle n, vector<vector<double>> *clock_fields)
@@ -238,9 +233,9 @@ ConvertJointState::ConvertJointState(ros::NodeHandle n, vector<vector<double>> *
 	n_ 				 = n; 
 	clock_fields_ 	 = clock_fields; 
 	nb_clock_fields_ = (*clock_fields).size();  
-	pub_JointState_ = n_.advertise<sensor_msgs::JointState>("goat/jointState", 100); 
-	reverse_order_ = false;
-	first_msg_ 		= true;  
+	pub_JointState_  = n_.advertise<sensor_msgs::JointState>("goat/jointState", 100); 
+	reverse_order_ 	 = false;
+	first_msg_ 		 = true;  
 
 	cout << "{Info} \tConvertJointState is being created." << endl; 
 }
