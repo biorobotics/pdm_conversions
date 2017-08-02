@@ -48,12 +48,12 @@ int main(int argc, char **argv)
 		// Creating the objects containing the callback function and the whole structure		
 		ConvertGoatPose convert_goat_pose_0(nh, &clock_fields, false, 0); 
 		ConvertJointState convert_goat_jointState_0(nh, &clock_fields); 
-		// ConvertParameters convert_goat_parameters_0(nh, &clock_fields, clock_fields.size());
+		ConvertParameters convert_goat_parameters_0(nh, &clock_fields);
 		
 	 	// Subscribe to the different topics that need their timestamp, metric units and proper ros type:
 		ros::Subscriber sub_pose = nh.subscribe("/pose", 1000, &ConvertGoatPose::convertGoatPoseCb, &convert_goat_pose_0);
 		ros::Subscriber sub_jointState = nh.subscribe("/jointState", 1000, &ConvertJointState::convertJointStateCb, &convert_goat_jointState_0);
-		//ros::Subscriber sub_params = nh.subscribe("/params", 1000, &ConvertParameters::convertParametersCb, &convert_goat_parameters_0);
+		ros::Subscriber sub_params = nh.subscribe("/params", 1000, &ConvertParameters::convertParametersCb, &convert_goat_parameters_0);
 		
 		while(ros::ok())
 		{

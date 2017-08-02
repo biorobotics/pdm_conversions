@@ -21,14 +21,10 @@
 using namespace std;
 
 class ConvertGoatPose {
-// goatpose_ header same as initial clock header, BUT the seq !
-// Attention. goatpose_.header.seq increments and is NOT the same as in clock header (where it is restarted 
-// when changing from sit-stand mode to jumping mode).
 // ALWAYS start playing your bag file before the first clock/pose message's been sent, otherwise you'll get
 // a shift in the data!!!
 public:  
 	std_msgs::Header timeStamp_incoming_msg_;
-	//ros::Duration time_offset_; 
 
 	ros::NodeHandle n_; 
 	ros::Publisher pub_GoatPose_; 
@@ -56,7 +52,6 @@ public:
 class ConvertJointState {
 public: 
 	std_msgs::Header timeStamp_incoming_msg_;
-	//ros::Duration time_offset_; 
 
 	ros::NodeHandle n_; 
 	ros::Publisher pub_JointState_; 
@@ -86,6 +81,7 @@ public:
 	vector<vector<double>> *clock_fields_;
 	int nb_clock_fields_; 
 	bool first_msg_; 
+	int actual_seq_in_csv_; // params are only sent out during jumping mode and NOT during sit-stand mode. this is to get the correct line for the timestamp
 
 	void convertParametersCb(const std_msgs::Float32MultiArray::ConstPtr& msg);
 
