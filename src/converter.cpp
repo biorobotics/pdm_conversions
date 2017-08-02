@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle nh;
 	
 	int a;
-	ros::param::param("converter/file_identity", a, 0); 
+	ros::param::param("converter/file_id", a, 0); 
 	cout<<"check the argument parsing:  "<< a <<endl;
 
 

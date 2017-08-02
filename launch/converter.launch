@@ -1,7 +1,8 @@
-<?xml version="1.0"?>
-
 <launch>
-	<node name="converter" pkg="pdm_conversions" type="converter" output="screen">
-		<param name="file_identity" type="int" value="4" />
-	</node>
+    <arg name="file_id" default="4" />
+
+    <node name="converter" pkg="pdm_conversions" type="converter" output="screen">
+      <param name="file_id" value="$(arg file_id)" />
+    </node>
 </launch>
+
