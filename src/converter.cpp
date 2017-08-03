@@ -20,17 +20,73 @@ int main(int argc, char **argv)
 	
 	int a;
 	ros::param::param("converter/file_id", a, 0); 
-	cout<<"check the argument parsing:  "<< a <<endl;
+	string path_in; 
 
+	switch(a)
+	{
+		case 1: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"; 
+			break;
+		case 2: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100R_1DcstH_1/100R_1DcstH_1_simTime.csv"; 
+			break;
+		case 3: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100R_1DvarH_1/100R_1DvarH_1_simTime.csv"; 
+			break;  
+		case 4: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100R_2DcstH_1/100R_2DcstH_1_simTime.csv"; 
+			break;  
+		case 5: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100R_2Dramp_1/100R_2Dramp_1_simTime.csv"; 
+			break;  
+		case 6: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100R_mixFaltG_2/100R_mixFlatG_2_simTime.csv"; 
+			break;  
+		case 7: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100R_mixFlatG_1/100R_mixFlatG_1_simTime.csv"; 
+			break;  
+		case 8: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/60B_1DcstH_1/60B_1DcstH_1_simTime.csv"; 
+			break;  
+		case 9: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/60B_1DvarG_1/60B_1DvarG_1_simTime.csv"; 
+			break;  
+		case 10: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/60B_1DvarH_1/60B_1DvarH_1_simTime.csv"; 
+			break;  
+		case 11: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/60B_1DvarH_2/60B_1DvarH_2_simTime.csv"; 
+			break;  
+		case 12: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/60B_2DcstH_1/60B_2DcstH_1_simTime.csv"; 
+			break;  
+		case 13: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/60B_2Dramp_1/60B_2Dramp_1_simTime.csv"; 
+			break;  
+		case 14: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/60B_2Dramp_2/60B_2Dramp_2_simTime.csv"; 
+			break;  
+		case 15: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/60B_mixFlatG_1/60B_mixFlatG_1_simTime.csv"; 
+			break;  
+		case 16: 
+			path_in = "/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/60R_mixFlatG_1/60R_mixFlatG_1_simTime.csv"; 
+			break;  
+		default: 
+			cout << "Default case: File_id matching with hard-coded path not found." << endl; 
+			//ifstream in("/home/puneet/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); // Puneet
+			//ifstream in("/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); // Astrid
+			break; 
+	}
 
-	// ifstream in("/home/puneet/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); // Puneet
-	ifstream in("/media/pea/Windows7_OS/Users/Astrid/Desktop/dataset2/100B_mixFlatG_1/100B_mixFlatG_1_simTime.csv"); // Astrid
+	cout<<"CONVERTER - Argument parsing: \t"<< a << "\t" << path_in << endl;
 
-
-	vector<vector<double>> clock_fields;
+	ifstream in(path_in);
+	
 	if(in)
 	{
 		// Saving .csv clock data to an array
+		vector<vector<double>> clock_fields;
 		string line; 
 		while(getline(in, line))
 		{

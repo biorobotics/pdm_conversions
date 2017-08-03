@@ -1,8 +1,8 @@
 <launch>
-    <arg name="file_id" default="4" />
+    <arg name="file_id" default="2" /> 
 
     <node name="converter" pkg="pdm_conversions" type="converter" output="screen">
-      <param name="file_id" value="$(arg file_id)" />
+      <param name="file_id" type= "int" value="$(arg file_id)" />
     </node>
-</launch>
 
+</launch>

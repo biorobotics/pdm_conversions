@@ -31,13 +31,13 @@ ConvertGoatPose::ConvertGoatPose(ros::NodeHandle n, vector<vector<double>> *cloc
 	else
 		cout << "{Warning} \t No message will be published, chosen mode is invalid (choose 0, 1, 2 or 3 and NOT : " << mode_ << ")" << endl; 
 
-	cout << "{Info} \tConvertGoatPose is being created." << endl; 
+	cout << "{Info} \tConvertGoatPose created." << endl; 
 }
 
 /// Destructor
 ConvertGoatPose::~ConvertGoatPose(void)
 {
-	cout << "{Info} \tConvertGoatPose is being destructed." << endl; 
+	cout << "{Info} \tConvertGoatPose destructed." << endl; 
 }
 
 /// Callback function
@@ -237,13 +237,13 @@ ConvertJointState::ConvertJointState(ros::NodeHandle n, vector<vector<double>> *
 	first_msg_ 		 = true;
 	pub_JointState_  = n_.advertise<sensor_msgs::JointState>("goat/jointState", 1000); 
 	  
-	cout << "{Info} \tConvertJointState is being created." << endl; 
+	cout << "{Info} \tConvertJointState created." << endl; 
 }
 
 /// Destructor
 ConvertJointState::~ConvertJointState(void)
 {
-	cout << "{Info} \tConvertJointState is being destructed." << endl; 
+	cout << "{Info} \tConvertJointState destructed." << endl; 
 }
 
 /// Member function(s)
@@ -292,16 +292,17 @@ void ConvertJointState::convertJointStateCb(const sensor_msgs::JointState::Const
 
 			goatjointstate_.velocity.push_back(msg->velocity[2]);			// [rad/s]
 			goatjointstate_.velocity.push_back(msg->velocity[1]);			// [rad/s]
-			goatjointstate_.position.push_back(msg->velocity[0]);			// [rad/s]
+			goatjointstate_.velocity.push_back(msg->velocity[0]);			// [rad/s]
 		}
 		else
 		{
 			goatjointstate_.effort.push_back(msg->effort[0]);				// [N/m]
 			goatjointstate_.effort.push_back(msg->effort[1]);				// [N/m]
 			goatjointstate_.effort.push_back(msg->effort[2]);				// [N/m]
+			
 			goatjointstate_.velocity.push_back(msg->velocity[0]);			// [rad/s]
 			goatjointstate_.velocity.push_back(msg->velocity[1]);			// [rad/s]
-			goatjointstate_.position.push_back(msg->velocity[2]);			// [rad/s]
+			goatjointstate_.velocity.push_back(msg->velocity[2]);			// [rad/s]
 		}
 
 		// Publishing message -------------------------------------------------------------
@@ -324,13 +325,13 @@ ConvertParameters::ConvertParameters(ros::NodeHandle n, vector<vector<double>> *
 	int actual_seq_in_csv_ = 0; 
 	pub_ControlState_ = n_.advertise<std_msgs::Float32MultiArray>("goat/controlState", 100); 
 	  
-	cout << "{Info} \tConvertParameters is being created." << endl; 
+	cout << "{Info} \tConvertParameters created." << endl; 
 }
 
 /// Destructor
 ConvertParameters::~ConvertParameters(void)
 {
-	cout << "{Info} \tConvertParameters is being destructed." << endl; 
+	cout << "{Info} \tConvertParameters destructed." << endl; 
 }
 
 /// Member function(s)

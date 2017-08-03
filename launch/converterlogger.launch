@@ -1,0 +1,14 @@
+<launch>
+    <arg name="file_id" default="1" /> 
+
+    <node name="converter" pkg="pdm_conversions" type="converter" output="screen">
+      <param name="file_id" type="int" value="$(arg file_id)" />
+    </node>
+
+      <arg name="path_id" default="1" />
+
+    <node name="logger" pkg="pdm_log_data" type="logger" output="screen">
+    	<param name="path_id" type="int" value="$(arg path_id)" />
+    </node>
+
+</launch>
